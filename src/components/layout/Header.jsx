@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { UserIcon } from '@heroicons/react/24/outline'; // 👈 Importamos el ícono de usuario
 
 
 // Lista de servicios para el menú desplegable
@@ -61,7 +60,6 @@ function Navbar() {
                   ▼
                 </span>
               </button>
-
               {/* Contenido desplegable (Dropdown) */}
               {menuAbierto && (
                 <div
@@ -111,11 +109,15 @@ function Navbar() {
               Reservar Cita
             </Link>
             <Link
-              to="/login"
-              className="w-10 h-10 rounded-2xl border border-gray-200 bg-gray-50 flex items-center justify-center text-gray-600 hover:text-pink-600 hover:border-pink-200 hover:bg-pink-50 transition-all"
-              title="Administración"
-            >
-              <UserIcon className="w-5 h-5" />
+            to={'/login'}>
+            <div className="avatar">
+              <div className="ring-primary ring-offset-base-100 w-10 rounded-full ring-2 ring-offset-2">
+                <img
+                  alt="Tailwind-CSS-Avatar-component"
+                  src="https://img.daisyui.com/images/profile/demo/spiderperson@192.webp"
+                />
+              </div>
+            </div>
             </Link>
           </nav>
         </div>
