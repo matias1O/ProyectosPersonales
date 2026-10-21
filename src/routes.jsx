@@ -8,6 +8,7 @@ import Layout from './components/layout/Layout';
 import Admin from './pages/Admin';
 import Usuario from './pages/Usuario';
 import Login from './pages/Login';
+import CreacionUsuario from './pages/CreacionUsuario';
 
 export const router = createBrowserRouter([
     {
@@ -34,16 +35,20 @@ export const router = createBrowserRouter([
                 element: <Reserva />
             },
             {
-                path: '/admin',
+                path: 'admin',
                 element: <Admin />,
             },
             {
-                path: '/usuario',
+                path: 'usuario',
                 element: <Usuario />,
             },
             {
-                path: '/login',
+                path: 'login',
                 element: <Login />,
+            },
+            {
+                path: 'creacionUsuario',
+                element: <CreacionUsuario />,
             },
         ],
     },

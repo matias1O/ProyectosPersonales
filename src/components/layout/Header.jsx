@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 // Lista de servicios para el menú desplegable
 const SERVICIOS_MENU = [
@@ -27,8 +26,44 @@ const SERVICIOS_MENU = [
 ];
 
 function Navbar() {
-  // Estado para controlar si el menú desplegable de servicios está abierto
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [usuario, setUsuario] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Función encargada de sincronizar el estado con localStorage
+    const cargarUsuario = () => {
+      const sesionGuardada = localStorage.getItem("usuarioActivo");
+      if (sesionGuardada) {
+        try {
+          setUsuario(JSON.parse(sesionGuardada));
+        } catch (error) {
+          console.error("Error al leer la sesión:", error);
+          setUsuario(null);
+        }
+      } else {
+        setUsuario(null);
+      }
+    };
+
+    // 1. Carga inicial al montar el Navbar
+    cargarUsuario();
+
+    // 2. Escuchar el evento cuando se inicia o cierra sesión en otra vista (Login)
+    window.addEventListener("cambioSesion", cargarUsuario);
+
+    // 3. Limpieza al desmontar el componente
+    return () => {
+      window.removeEventListener("cambioSesion", cargarUsuario);
+    };
+  }, []);
+
+  const handleCerrarSesion = () => {
+    localStorage.removeItem("usuarioActivo");
+    setUsuario(null);
+    window.dispatchEvent(new Event("cambioSesion")); // Avisa que se cerró sesión
+    navigate("/login");
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-pink-100 shadow-sm">
@@ -60,10 +95,11 @@ function Navbar() {
                   ▼
                 </span>
               </button>
-              {/* Contenido desplegable (Dropdown) */}
+
+              {/* Contenido desplegable */}
               {menuAbierto && (
                 <div
-                  className="absolute left-0 mt-2 w-72 sm:w-80 rounded-2xl bg-white p-3 shadow-xl border border-pink-100 ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-150"
+                  className="absolute left-0 mt-2 w-72 sm:w-80 rounded-2xl bg-white p-3 shadow-xl border border-pink-100 ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-150 z-50"
                   onMouseLeave={() => setMenuAbierto(false)}
                 >
                   <div className="flex flex-col gap-2">
@@ -108,17 +144,73 @@ function Navbar() {
             >
               Reservar Cita
             </Link>
-            <Link
-            to={'/login'}>
-            <div className="avatar">
-              <div className="ring-primary ring-offset-base-100 w-10 rounded-full ring-2 ring-offset-2">
-                <img
-                  alt="Tailwind-CSS-Avatar-component"
-                  src="https://img.daisyui.com/images/profile/demo/spiderperson@192.webp"
-                />
+
+            {/* SECCIÓN DEL USUARIO / AVATAR */}
+            {usuario ? (
+              // Menú si hay sesión activa
+              <div className="dropdown dropdown-end">
+                <div
+                  tabIndex={0}
+                  role="button"
+                  className="btn btn-ghost btn-circle avatar"
+                >
+                  <div className="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold text-lg ring-2 ring-pink-500 ring-offset-2 ring-offset-base-100 shadow-sm select-none">
+                    {usuario.nombre
+                      ? usuario.nombre.charAt(0).toUpperCase()
+                      : "U"}
+                  </div>
+                </div>
+                <ul
+                  tabIndex={0}
+                  className="menu menu-sm dropdown-content bg-white rounded-2xl z-[1] mt-3 w-52 p-2 shadow-xl border border-pink-100"
+                >
+                  <li className="px-3 py-2 border-b border-gray-100">
+                    <span className="font-bold text-gray-800 text-sm p-0">
+                      Hola, {usuario.nombre}
+                    </span>
+                    <span className="text-[11px] text-pink-500 uppercase font-semibold p-0">
+                      Rol: {usuario.rol}
+                    </span>
+                  </li>
+                  {usuario.rol === "admin" && (
+                    <li>
+                      <Link
+                        to="/admin"
+                        className="text-gray-700 hover:text-pink-600 mt-1"
+                      >
+                        Panel de Administración
+                      </Link>
+                    </li>
+                  )}
+                  <li>
+                    <button
+                      onClick={handleCerrarSesion}
+                      className="text-error font-medium hover:bg-red-50 mt-1"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </li>
+                </ul>
               </div>
-            </div>
-            </Link>
+            ) : (
+              // Acceso al Login si no hay sesión
+              <Link to="/login" title="Iniciar Sesión">
+                <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 border border-gray-200 hover:border-pink-300 hover:text-pink-500 hover:bg-pink-50 transition-all flex items-center justify-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </Link>
+            )}
           </nav>
         </div>
       </div>
